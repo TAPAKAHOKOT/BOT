@@ -186,8 +186,12 @@ for event in longpoll.listen():
         except:
             file = open("text.txt", "w")
 
-        file.write(name + "\n" + str(event.user_id) + "\n" +
-                   mes_time + "\n" + str(event.text) + "\n\n")
+        mes = name + "\n" + str(event.user_id) + "\n" +\
+            mes_time + "\n" + str(event.text) + "\n\n"
+
+        print(mes)
+
+        file.write(mes)
         file.close()
 
         command = event.text.split(" ")[0].lower()
