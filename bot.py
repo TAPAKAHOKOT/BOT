@@ -10,6 +10,8 @@ import time as tt
 
 t = tt.perf_counter()
 
+password = "Moscow2001"
+
 
 class lgpoll(VkLongPoll):
     def listen(self):
@@ -90,9 +92,12 @@ print(">>LIstening messages started")
 for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
        # Слушаем longpoll, если пришло сообщение то:
-        if event.text.lower() in stop:
-            send_mes("---BREAKING---", event.user_id)
-            running = False
+        if event.text.lower().split(" ")[0] in stop:
+            if event.text.lower().split(" ")[1] == password:
+                send_mes("---BREAKING---", event.user_id)
+                running = False
+            else:
+                send_mes("WRONG PASSWORD", event.user_id)
         elif event.text.lower() in films:
 
             text, imgs = get_films()
