@@ -5,7 +5,10 @@ from vk_api import VkUpload
 from random import randint as rnd
 import bs4
 import requests as req
-import keyboard as kb
+import time as tt
+
+
+t = tt.perf_counter()
 
 
 class lgpoll(VkLongPoll):
@@ -33,9 +36,6 @@ def n():
     global running
     running = False
     print("---BREAKING---")
-
-
-kb.add_hotkey('q', n)
 
 
 def get_films():
@@ -82,6 +82,7 @@ def send_mes(mes, u_id, attachments=False):
 
 
 films = ["кино", "фильмы", "рассписание кино", "афиша", "киноафиша"]
+stop = ["break", "стоп", "стой", "выкл", "выключись"]
 
 print("--CONNTECTED SUCCESFULL")
 print(">>LIstening messages started")
@@ -89,7 +90,10 @@ print(">>LIstening messages started")
 for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
        # Слушаем longpoll, если пришло сообщение то:
-        if event.text.lower() in films:
+        if event.text.lower() in stop:
+            send_mes("---BREAKING---", event.user_id)
+            running = False
+        elif event.text.lower() in films:
 
             text, imgs = get_films()
 
