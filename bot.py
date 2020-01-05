@@ -10,7 +10,7 @@ import time as tt
 
 t = tt.perf_counter()
 
-password = "Moscow2001"
+password = "4608"
 
 
 class lgpoll(VkLongPoll):
@@ -93,7 +93,7 @@ for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
        # Слушаем longpoll, если пришло сообщение то:
         if event.text.lower().split(" ")[0] in stop:
-            if event.text.lower().split(" ")[1] == password:
+            if event.text.split(" ")[1] == password:
                 send_mes("---BREAKING---", event.user_id)
                 running = False
             else:
