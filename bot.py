@@ -6,7 +6,7 @@ from random import randint as rnd
 import bs4
 import requests as req
 import time as tt
-
+import datetime
 
 t = tt.perf_counter()
 
@@ -40,33 +40,102 @@ def n():
     print("---BREAKING---")
 
 
-def get_films():
+def get_films(params):
+    id = "8323152"
+    pl = "Полярисе"
+
+    for place in params:
+        if place.lower() in ["полярис", "полик"]:
+            id = "8323152"
+            params.pop(params.index(place))
+            break
+
+        elif place.lower() == "оцнк":
+            id = "8325231"
+            pl = "ОЦНК"
+            params.pop(params.index(place))
+            break
+
+    if params:
+        d = params[0]
+    else:
+        d = 0
+
+    if str(d).lower() == "завтра":
+        d = 1
+    day = d
+
     arr = []
-    page = req.get("https://salekhard.kinoafisha.info/cinema/8323152/")
+    link = "https://salekhard.kinoafisha.info/cinema/{}/".format(id)
+    page = req.get(link)
     soup = bs4.BeautifulSoup(page.text, "html.parser")
 
-    arr_names = soup.select(".films_name.link.link-default")
-    arr_times = soup.select(".showtimes_item.fav.fav-film")
-    arr_imgs = soup.select(".films_iconFrame")
+    arr1 = soup.select(".week_num")
+    arr2 = soup.select(".week_day")
+    arr_days = {}
 
-    text = []
-    images = []
+    for k, i in zip(arr1, arr2):
 
-    for times, names, img in zip(arr_times, arr_names, arr_imgs):
-        s = ""
-        times = str(times).split("session_time")[1:]
+        k = str(k).split(">")[1]
 
-        name = str(names).split('class="link_border">')[1].split('</span>')[0]
+        if 48 <= ord(k[1]) <= 58:
+            k = k[:2]
+        else:
+            k = k[0]
 
-        img = str(img).split('src="')[1].split('"')[0]
-        images.append(img)
+        i = str(i).split("href=")[1].split(">")[0]
 
-        s += "\n" + name + "\n"
-        for time in times:
+        arr_days[k] = i
+    if day not in arr_days.keys() and day != 0 and day != 1:
+        send_mes("Расписание на {} число отсутсвтует".format(
+            day), event.user_id)
+    else:
+        if day in arr_days:
+            link = arr_days[day]
+        elif day == 0 or day == 1:
+            link = list(arr_days.values())[d]
+            day = list(arr_days.keys())[d]
 
-            s += time[2:7] + " "
-        text.append(s)
-    return text, images
+        send_mes("Рассписание кино на {}.{} в {}".format(
+            day, datetime.date.today().strftime('%m'), pl), event.user_id)
+
+        link = link.split("?")
+        m_l = "https:" + link[0][1:]
+
+        p = link[1].split("&")
+        par = {}
+
+        for k in p:
+            par[k.split("=")[0]] = k.split("=")[1]
+
+        page = req.get(m_l, params=par)
+        soup = bs4.BeautifulSoup(page.text, "html.parser")
+
+        arr_names = soup.select(".films_name.link.link-default")
+        arr_times = soup.select(".showtimes_item.fav.fav-film")
+        arr_imgs = soup.select(".films_iconFrame")
+
+        text = []
+        images = []
+
+        for times, names, img in zip(arr_times, arr_names, arr_imgs):
+            s = ""
+            times = str(times).split("session_time")[1:]
+
+            name = str(names).split('class="link_border">')[
+                1].split('</span>')[0]
+
+            img = str(img).split('src="')[1].split('"')[0]
+            images.append(img)
+
+            s += "\n" + name + "\n"
+            for time in times:
+
+                s += time[2:7] + " "
+            text.append(s)
+
+        return text, images
+    return 0, 0
 
 
 def send_mes(mes, u_id, attachments=False):
@@ -83,35 +152,43 @@ def send_mes(mes, u_id, attachments=False):
             random_id=rnd(10**8, 10**9))
 
 
-films = ["кино", "фильмы", "рассписание кино", "афиша", "киноафиша"]
-stop = ["break", "стоп", "стой", "выкл", "выключись"]
+films = ["кино", "афиша"]
+stop = ["break", "стоп"]
 
 print("--CONNTECTED SUCCESFULL")
 print(">>LIstening messages started")
 
 for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
-       # Слушаем longpoll, если пришло сообщение то:
-        if event.text.lower().split(" ")[0] in stop:
-            if event.text.split(" ")[1] == password:
+        # Слушаем longpoll, если пришло сообщение то:
+
+        command = event.text.split(" ")[0].lower()
+        params = event.text.split(" ")[1:]
+
+        if command in stop:
+            if password in params:
                 send_mes("---BREAKING---", event.user_id)
                 running = False
             else:
                 send_mes("WRONG PASSWORD", event.user_id)
-        elif event.text.lower() in films:
 
-            text, imgs = get_films()
+        elif command in films:
+            if params:
+                text, imgs = get_films(params)
+            else:
+                text, imgs = get_films()
 
-            for k in range(len(text)):
-                if imgs[k]:
-                    upload = VkUpload(vk_session)
-                    attachments = []
-                    image = session.get(imgs[k], stream=True)
-                    photo = upload.photo_messages(photos=image.raw)[0]
-                    attachments.append(
-                        'photo{}_{}'.format(photo['owner_id'], photo['id'])
-                    )
+            if text:
+                for k in range(len(text)):
+                    if imgs[k]:
+                        upload = VkUpload(vk_session)
+                        attachments = []
+                        image = session.get(imgs[k], stream=True)
+                        photo = upload.photo_messages(photos=image.raw)[0]
+                        attachments.append(
+                            'photo{}_{}'.format(photo['owner_id'], photo['id'])
+                        )
 
-                send_mes(text[k], event.user_id, attachments)
+                    send_mes(text[k], event.user_id, attachments)
         else:
             send_mes("Else", event.user_id)
