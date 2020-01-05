@@ -40,21 +40,22 @@ def n():
     print("---BREAKING---")
 
 
-def get_films(params):
+def get_films(params=0):
     id = "8323152"
     pl = "Полярисе"
 
-    for place in params:
-        if place.lower() in ["полярис", "полик"]:
-            id = "8323152"
-            params.pop(params.index(place))
-            break
+    if params:
+        for place in params:
+            if place.lower() in ["полярис", "полик"]:
+                id = "8323152"
+                params.pop(params.index(place))
+                break
 
-        elif place.lower() == "оцнк":
-            id = "8325231"
-            pl = "ОЦНК"
-            params.pop(params.index(place))
-            break
+            elif place.lower() == "оцнк":
+                id = "8325231"
+                pl = "ОЦНК"
+                params.pop(params.index(place))
+                break
 
     if params:
         d = params[0]
