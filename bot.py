@@ -139,6 +139,17 @@ def get_films(params=0):
     return 0, 0
 
 
+def get_name(id):
+    link = "https://vk.com/id" + str(id)
+    page = req.get(link)
+    soup = bs4.BeautifulSoup(page.text, "html.parser")
+
+    name = soup.select(".page_name")[0]
+    name = str(name).split(">")[1].split("<")[0]
+
+    return name
+
+
 def send_mes(mes, u_id, attachments=False):
     if attachments:
         vk.messages.send(
@@ -162,6 +173,19 @@ print(">>LIstening messages started")
 for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
         # Слушаем longpoll, если пришло сообщение то:
+
+        now = datetime.datetime.now()
+        mes_time = str(now.strftime("%H:%M:%Ss"))
+        name = get_name(event.user_id)
+
+        try:
+            file = open("text.txt", "a")
+        except:
+            file = open("text.txt", "w")
+
+        file.write(name + "\n" + str(event.user_id) + "\n" +
+                   mes_time + "\n" + str(event.text) + "\n\n")
+        file.close()
 
         command = event.text.split(" ")[0].lower()
         params = event.text.split(" ")[1:]
