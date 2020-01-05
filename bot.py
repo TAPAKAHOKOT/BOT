@@ -144,8 +144,11 @@ def get_name(id):
     page = req.get(link)
     soup = bs4.BeautifulSoup(page.text, "html.parser")
 
-    name = soup.select(".page_name")[0]
-    name = str(name).split(">")[1].split("<")[0]
+    try:
+        name = soup.select(".page_name")[0]
+        name = str(name).split(">")[1].split("<")[0]
+    except:
+        name = ""
 
     return name
 
