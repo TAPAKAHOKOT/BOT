@@ -171,7 +171,7 @@ films = ["кино", "афиша"]
 stop = ["break", "стоп"]
 
 print("--CONNTECTED SUCCESFULL")
-print(">>LIstening messages started")
+print(">>LIstening messages started\n")
 
 for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
