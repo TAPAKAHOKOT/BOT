@@ -6,121 +6,109 @@ from emoji import emojize
 
 bot = telebot.TeleBot('979524481:AAH1mxv9Bij5GjMN_zLiD-eZRqAVlO7qtB8')
 
-
 keyboard_main = telebot.types.ReplyKeyboardMarkup(resize_keyboard=3, one_time_keyboard=False)
 
 keyboard_main.row('КиноАфиша', 'КиноШутка')
 keyboard_main.row('КиноФакт', 'КиноСовет')
 
-
-hello_varioations = ["Привет!!!", "Дратути", "Добрый день", "Hi Hello", "Пис)"]
-what_variations = ["А? Что? не пойму", "Whaaaaaat????? ", "Ой, я тебя не понимаю", "Тебя не понять", "Чтоо? "]
-hello_commands = ["привет", "салам", "дратути", "hi", "hello", "хай", "здравствуйте", "здорова"]
-
-file = open("jokes", "r", encoding='utf-8')
-
-jokes = []
-joke = ""
-for k in range(100):
-    text = file.readline().replace("\n", "")
-    joke += text + "\n"
-
-    if "%" in text:
-        jokes.append(joke.replace("%", ""))
-        joke = ""
-file.close()
+hello_variations = ["Привет!!!", "Дратути", "Добрый день", "Hi Hello", "Пис)", "Добро пожаловать", "You are welcome",
+                     "Добрый день, добрый вечер и доброй ночи!"]
+what_variations = ["А? Что? не пойму", "Whaaaaaat????? ", "Ой, я тебя не понимаю", "Тебя не понять", "Чтоо? ",
+                   "Повториии", "Not understand", "Error 418 try again", "А?"]
+hello_commands = ["привет", "салам", "дратути", "hi", "hello", "хай", "здравствуйте", "здорова", "пис", "peace"]
 
 
-file = open("films", "r", encoding='utf-8')
-films = []
-filmo_fact = ""
-for k in range(100):
-    text = file.readline().replace("\n", "")
-    filmo_fact += text + "\n"
+def unpack_file(filename: str, line_end: str = "") -> list:
+    file = open(filename, "r", encoding='utf-8')
 
-    if "%" in text:
-        films.append(filmo_fact.replace("%", ""))
-        filmo_fact = ""
-file.close()
+    output_array = []
+    text_line = ""
 
-file = open("filmotop", "r", encoding='utf-8')
-filmotops = []
-filmotop = ""
-for k in range(350):
-    text = file.readline().replace("\n", "")
-    filmotop += text + "\n"
+    for _ in range(350):
+        text = file.readline().replace("\n", "")
+        text_line += text + line_end
 
-    if "%" in text:
-        filmotops.append(filmotop.replace("%", ""))
-        filmotop = ""
-file.close()
+        if "%" in text:
+            output_array.append(text_line.replace("%", ""))
+            text_line = ""
+    file.close()
+
+    return output_array
 
 
-file = open("stickers_what", "r", encoding='utf-8')
-stickers_what = []
-stick = ""
-for k in range(350):
-    text = file.readline().replace("\n", "")
-    stick += text
+jokes = unpack_file("jokes")
+films = unpack_file("films")
+filmotops = unpack_file("filmotop", line_end="\n")
+stickers_what = unpack_file("stickers_what")
+stickers_hello = unpack_file("stickers_hello")
+stickers_sorry = unpack_file("stickers_sorry")
 
-    if "%" in text:
-        stickers_what.append(stick.replace("%", ""))
-        stick = ""
-file.close()
-
-
-file = open("stickers_hello", "r", encoding='utf-8')
-stickers_hello = []
-stick = ""
-for k in range(350):
-    text = file.readline().replace("\n", "")
-    stick += text
-
-    if "%" in text:
-        stickers_hello.append(stick.replace("%", ""))
-        stick = ""
-file.close()
+random_hello, random_stickers_hello = {}, {}
+random_what, random_stickers_what = {}, {}
+random_jokes, random_films, random_filmotop = {}, {}, {}
+random_stickers_sorry = {}
 
 
-file = open("stickers_sorry", "r", encoding='utf-8')
-stickers_sorry = []
-stick = ""
-for k in range(350):
-    text = file.readline().replace("\n", "")
-    stick += text
+def add_arrays(chat_id: int):
+    if chat_id not in random_hello.keys():
+        random_hello[chat_id], random_stickers_hello[chat_id] = [-1] * 3, [-1] * 3
+        random_what[chat_id], random_stickers_what[chat_id] = [-1] * 3, [-1] * 3
+        random_jokes[chat_id], random_films[chat_id], random_filmotop[chat_id] = [-1] * 30, [-1] * 10, [-1] * 40
+        random_stickers_sorry[chat_id] = [-1] * 3
 
-    if "%" in text:
-        stickers_sorry.append(stick.replace("%", ""))
-        stick = ""
-file.close()
+
+def get_smth_about_random(arr_len: int, rnd_list: list) -> list:
+    elements = [k for k in range(arr_len) if k not in rnd_list]
+
+    element = choice(elements)
+    rnd_list = [element] + rnd_list[:2]
+
+    return [*rnd_list]
+
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
-
     print(message.text, message.from_user.username, str(datetime.datetime.now().strftime("%H:%M:%Ss")))
-    bot.send_message(message.chat.id, f'{choice(hello_varioations)}, лови клавиатуру', reply_markup=keyboard_main)
+    bot.send_message(message.chat.id, f'{choice(hello_variations)}, лови клавиатуру', reply_markup=keyboard_main)
+
 
 @bot.message_handler(content_types=['text'])
 def send_message(message):
+    global random_hello, random_stickers_hello, random_what, random_stickers_what
+    global random_jokes, random_films, random_filmotop, random_stickers_sorry
+
+    ident = message.chat.id
+    add_arrays(ident)
+
     command = message.text.lower()
     print(message.text, message.from_user.username, str(datetime.datetime.now().strftime("%H:%M:%Ss")))
 
     if command in hello_commands:
-        bot.send_message(message.chat.id, f'{choice(hello_varioations)}', reply_markup=keyboard_main)
-        bot.send_sticker(message.chat.id, choice(stickers_hello))
+        random_hello[ident] = get_smth_about_random(len(hello_variations), random_hello[ident])
+        random_stickers_hello[ident] = get_smth_about_random(len(stickers_hello), random_stickers_hello[ident])
+
+        bot.send_message(message.chat.id, f'{hello_variations[random_hello[ident][0]]}', reply_markup=keyboard_main)
+        bot.send_sticker(message.chat.id, stickers_hello[random_stickers_hello[ident][0]])
 
     elif command == "киношутка":
-        bot.send_message(message.chat.id, f"{choice(jokes)}", reply_markup=keyboard_main)
+        random_jokes[ident] = get_smth_about_random(len(jokes), random_jokes[ident])
+        bot.send_message(message.chat.id, f"{jokes[random_jokes[ident][0]]}", reply_markup=keyboard_main)
 
     elif command == "кинофакт":
-        bot.send_message(message.chat.id, f"{choice(films)}", reply_markup=keyboard_main)
+        random_films[ident] = get_smth_about_random(len(films), random_films[ident])
+        bot.send_message(message.chat.id, f"{films[random_films[ident][0]]}", reply_markup=keyboard_main)
 
     elif command == "киноафиша":
-        bot.send_message(message.chat.id, f"В данный момент кинотеатры закрыты\n\n\nпс функция дорабатывается", reply_markup=keyboard_main)
-        bot.send_sticker(message.chat.id, choice(stickers_sorry))
+        random_stickers_sorry[ident] = get_smth_about_random(len(stickers_sorry), random_stickers_sorry[ident])
+        bot.send_message(message.chat.id, f"В данный момент кинотеатры закрыты\n\n\nпс функция дорабатывается",
+                         reply_markup=keyboard_main)
+
+        bot.send_sticker(message.chat.id, stickers_sorry[random_stickers_sorry[ident][0]])
 
     elif command == "киносовет":
-        ind = rnd(0, len(filmotops))
+        random_filmotop[ident] = get_smth_about_random(len(filmotops), random_filmotop[ident])
+
+        ind = random_filmotop[ident][0]
         kino = filmotops[ind]
 
         kino_name = kino.split("\n")[0 if kino == filmotops[0] else 1]
@@ -138,7 +126,11 @@ def send_message(message):
         bot.send_photo(message.chat.id, photo=data)
 
     else:
-        bot.send_message(message.chat.id, f"{choice(what_variations)}", reply_markup=keyboard_main)
-        bot.send_sticker(message.chat.id, choice(stickers_what))
+        random_what[ident] = get_smth_about_random(len(what_variations), random_what[ident])
+        random_stickers_what[ident] = get_smth_about_random(len(stickers_what), random_stickers_what[ident])
+
+        bot.send_message(message.chat.id, f"{what_variations[random_what[ident][0]]}", reply_markup=keyboard_main)
+        bot.send_sticker(message.chat.id, stickers_what[random_stickers_what[ident][0]])
+
 
 bot.polling()
