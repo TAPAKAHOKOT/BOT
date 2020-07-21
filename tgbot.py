@@ -1,6 +1,5 @@
 import telebot
 from random import choice
-from random import randint as rnd
 import datetime
 from emoji import emojize
 
@@ -12,7 +11,7 @@ keyboard_main.row('КиноАфиша', 'КиноШутка')
 keyboard_main.row('КиноФакт', 'КиноСовет')
 
 hello_variations = ["Привет!!!", "Дратути", "Добрый день", "Hi Hello", "Пис)", "Добро пожаловать", "You are welcome",
-                     "Добрый день, добрый вечер и доброй ночи!"]
+                    "Добрый день, добрый вечер и доброй ночи!"]
 what_variations = ["А? Что? не пойму", "Whaaaaaat????? ", "Ой, я тебя не понимаю", "Тебя не понять", "Чтоо? ",
                    "Повториии", "Not understand", "Error 418 try again", "А?"]
 hello_commands = ["привет", "салам", "дратути", "hi", "hello", "хай", "здравствуйте", "здорова", "пис", "peace"]
@@ -118,7 +117,7 @@ def send_message(message):
         cookie = emojize(":cookie:", use_aliases=True)
 
         bot.send_message(message.chat.id,
-                         f"Название фильма:\n\t\t{fire}{fire}{fire}{kino_name}{fire}{fire}{fire}\n\nОписание{cookie}:\n\t\t{kino_desk}",
+            f"Название фильма:\n\t\t{fire*3}{kino_name}{fire*3}\n\nОписание{cookie}:\n\t\t{kino_desk}",
                          reply_markup=keyboard_main)
 
         with open(f"photos/{ind}.jpeg", "rb") as file:
