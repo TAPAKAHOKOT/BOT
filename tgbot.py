@@ -60,7 +60,7 @@ def get_smth_about_random(arr_len: int, rnd_list: list) -> list:
     elements = [k for k in range(arr_len) if k not in rnd_list]
 
     element = choice(elements)
-    rnd_list = [element] + rnd_list[:2]
+    rnd_list = [element] + rnd_list[:len(rnd_list) - 1]
 
     return [*rnd_list]
 
@@ -117,7 +117,7 @@ def send_message(message):
         cookie = emojize(":cookie:", use_aliases=True)
 
         bot.send_message(message.chat.id,
-            f"Название фильма:\n\t\t{fire*3}{kino_name}{fire*3}\n\nОписание{cookie}:\n\t\t{kino_desk}",
+                         f"Название фильма:\n\t\t{fire * 3}{kino_name}{fire * 3}\n\nОписание{cookie}:\n\t\t{kino_desk}",
                          reply_markup=keyboard_main)
 
         with open(f"photos/{ind}.jpeg", "rb") as file:
